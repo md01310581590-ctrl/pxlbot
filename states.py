@@ -4,6 +4,7 @@ class CalculatorStates(StatesGroup):
     choosing_product = State()
     choosing_niche = State()
     choosing_integration = State()
+    choosing_addon = State()
     entering_contact = State()
 
 class OrderStates(StatesGroup):
@@ -12,4 +13,7 @@ class OrderStates(StatesGroup):
 
 class SupportAuditStates(StatesGroup):
     entering_bot_link = State()
+    entering_contact = State()
+
+class BundleOrderStates(StatesGroup):
     entering_contact = State()
