@@ -5,7 +5,6 @@ from aiogram.fsm.context import FSMContext
 
 from keyboards import (
     get_main_menu_kb,
-    get_cases_kb,
     get_showroom_kb,
     get_legal_case_kb,
     get_auto_case_kb,

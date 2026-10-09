@@ -39,6 +39,9 @@ def get_showroom_kb() -> InlineKeyboardMarkup:
         ]
     )
 
+def get_cases_kb() -> InlineKeyboardMarkup:
+    return get_showroom_kb()
+
 def get_legal_case_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
