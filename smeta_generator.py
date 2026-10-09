@@ -396,8 +396,20 @@ def generate_smeta_docx(data: dict, client_contact: str = "", output_path: str =
         ts = now.strftime("%Y%m%d_%H%M%S")
         safe_client = "".join(c for c in client_contact if c.isalnum() or c in "_-")[:15] or "Client"
         filename = f"Смета_PxlBot_Приложение_1_{safe_client}_{ts}.docx"
+        
+        # Проверяем наличие папки Desktop (для Windows) или используем локальную папку/tmp (для Bothost Linux)
         desktop_dir = os.path.join(os.path.expanduser("~"), "Desktop")
-        output_path = os.path.join(desktop_dir, filename)
+        if os.path.exists(desktop_dir):
+            output_dir = desktop_dir
+        else:
+            output_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "generated_smetas")
+            os.makedirs(output_dir, exist_ok=True)
+            
+        output_path = os.path.join(output_dir, filename)
+
+    parent_dir = os.path.dirname(output_path)
+    if parent_dir and not os.path.exists(parent_dir):
+        os.makedirs(parent_dir, exist_ok=True)
 
     doc.save(output_path)
     return output_path

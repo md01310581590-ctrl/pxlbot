@@ -369,19 +369,11 @@ async def cb_show_demo_auto(call: CallbackQuery):
     await safe_send_or_edit(call, text=text, reply_markup=get_auto_case_kb(), parse_mode="HTML", disable_web_page_preview=False)
     await call.answer()
 
-# ────────────────────────── РАЗДЕЛ ПРОЕКТОВ И КЕЙСОВ ──────────────────────────
+# ────────────────────────── РАЗДЕЛ ШОУРУМА И РЕШЕНИЙ ──────────────────────────
 
 @router.callback_query(F.data == "cases_menu")
 async def cb_cases_menu(call: CallbackQuery):
-    text = (
-        "🚀 <b>КЕЙСЫ И РЕШЕНИЯ // РЕАЛЬНЫЙ ROI ДЛЯ БИЗНЕСА</b>\n"
-        + DIVIDER +
-        "Мы создаем решения, которые напрямую влияют на прибыль: сокращают время ответа клиенту, "
-        "увеличивают средний чек и защищают компанию от штрафов.\n\n"
-        "Выберите кейс, чтобы изучить бизнес-результат и архитектуру:"
-    )
-    await safe_send_or_edit(call, text=text, reply_markup=get_cases_kb(), parse_mode="HTML")
-    await call.answer()
+    await cb_showroom_menu(call)
 
 @router.callback_query(F.data == "case_agro")
 async def cb_case_agro(call: CallbackQuery):
@@ -407,9 +399,7 @@ async def cb_case_agro(call: CallbackQuery):
 
 @router.callback_query(F.data == "case_legal")
 async def cb_case_legal(call: CallbackQuery):
-    video_payload, kind = get_legal_video()
-
-    caption_text = (
+    text = (
         "⚖️ <b>ФЛАГМАН: «ЮрБиржа» (LegalTech Marketplace & Escrow)</b>\n"
         + DIVIDER +
         "<b>Формат:</b> Двухсторонний маркетплейс услуг внутри Telegram (Mini App)\n\n"
@@ -419,37 +409,9 @@ async def cb_case_legal(call: CallbackQuery):
         "• <b>Безопасная сделка (Escrow):</b> заморозка средств и выплата только после подтверждения результата;\n"
         "• <b>Проверка юристов:</b> верификация через госреестры (ФИС ФРДО и Минюст РФ);\n"
         "• <b>Интерактивный квиз-брифинг:</b> авто-распределение заявок проверенным экспертам.\n\n"
-        "👉 <b><a href=\"https://t.me/pxlbot_studios/20\">Ссылка на подробный разбор кейса в канале</a></b>\n\n"
+        "👉 <b><a href=\"https://t.me/pxlbot_studios/20\">Ссылка на подробный разбор решения в канале</a></b>\n\n"
         "💡 <i>Разрабатываем сервисы услуг, закрытые клубы и биржи с монетизацией под ключ.</i>"
     )
-
-    if kind in ("file_id", "local_file"):
-        try:
-            try:
-                await call.message.delete()
-            except Exception:
-                pass
-            await call.message.answer_video(
-                video=video_payload,
-                caption=caption_text,
-                reply_markup=get_legal_case_kb(),
-                parse_mode="HTML"
-            )
-            await call.answer()
-            return
-        except Exception as e:
-            print(f"Ошибка отправки видео кейса ЮрБиржа: {e}")
-
-    # Fallback на текстовую карточку
-    text = caption_text
-    if kind == "too_large":
-        admin_id = get_admin_id()
-        if call.from_user.id == admin_id or (call.from_user.username or "").lower() == (FOUNDER_USERNAME or "nicky_pxl").lower():
-            text += (
-                "\n\n⚙️ <i>[Админ-подсказка]: Видео «итог 1.mp4» найдено на рабочем столе, но весит 64.4 МБ (лимит Telegram Bot API на прямую отправку файлов — 50 МБ). "
-                "Просто перешлите это видео боту прямо в чат, и бот мгновенно привяжет его через облачный file_id!</i>"
-            )
-
     await safe_send_or_edit(call, text=text, reply_markup=get_legal_case_kb(), parse_mode="HTML", disable_web_page_preview=False)
     await call.answer()
 

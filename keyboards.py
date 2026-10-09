@@ -14,11 +14,8 @@ def get_main_menu_kb() -> InlineKeyboardMarkup:
                 InlineKeyboardButton(text="🧮 Рассчитать проект за 1 минуту", callback_data="start_calc")
             ],
             [
-                InlineKeyboardButton(text="🚀 Кейсы и окупаемость", callback_data="cases_menu"),
+                InlineKeyboardButton(text="🎪 Шоурум решений (Демо-стенды)", callback_data="showroom_menu"),
                 InlineKeyboardButton(text="📂 Тарифы и пакеты под ключ", callback_data="services_menu")
-            ],
-            [
-                InlineKeyboardButton(text="🎪 Шоурум решений (Демо-стенды)", callback_data="showroom_menu")
             ],
             [
                 InlineKeyboardButton(text="💬 Написать основателю (@Nicky_pxl)", url=get_founder_url())
@@ -27,20 +24,6 @@ def get_main_menu_kb() -> InlineKeyboardMarkup:
                 InlineKeyboardButton(text="📢 Наш канал", url=get_channel_url()),
                 InlineKeyboardButton(text="💼 О студии / Venture", callback_data="venture_menu")
             ]
-        ]
-    )
-
-def get_cases_kb() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="🌾 B2B-терминал: «Агротерминал» (TradingView & Netback)", callback_data="case_agro")],
-            [InlineKeyboardButton(text="⚖️ LegalTech: «ЮрБиржа» (Escrow & Проверка юристов)", callback_data="case_legal")],
-            [InlineKeyboardButton(text="🚗 Автобизнес: Интерактивный калькулятор ТО и заезда", callback_data="case_auto")],
-            [InlineKeyboardButton(text="🛍 E-commerce: Онлайн-магазин в Telegram (Mini App)", callback_data="case_miniapp")],
-            [InlineKeyboardButton(text="💈 Сфера услуг: Запись 24/7 и борьба с неявками", callback_data="case_beauty")],
-            [InlineKeyboardButton(text="📋 Квиз-воронка: Лидген в недвижимости и ремонте", callback_data="case_quiz")],
-            [InlineKeyboardButton(text="🎪 Шоурум решений (Демо-стенды)", callback_data="showroom_menu")],
-            [InlineKeyboardButton(text="🔙 Главное меню", callback_data="to_main_menu")]
         ]
     )
 
@@ -62,8 +45,7 @@ def get_legal_case_kb() -> InlineKeyboardMarkup:
             [InlineKeyboardButton(text="📢 Читать пост о ЮрБирже в канале", url="https://t.me/pxlbot_studios/20")],
             [InlineKeyboardButton(text="🎯 Хочу похожее решение для бизнеса", callback_data="start_order")],
             [InlineKeyboardButton(text="🧮 Рассчитать смету проекта", callback_data="start_calc")],
-            [InlineKeyboardButton(text="🎪 В шоурум решений", callback_data="showroom_menu")],
-            [InlineKeyboardButton(text="📂 Все проекты и кейсы", callback_data="cases_menu")],
+            [InlineKeyboardButton(text="🎪 Все стенды шоурума", callback_data="showroom_menu")],
             [InlineKeyboardButton(text="🔙 Главное меню", callback_data="to_main_menu")]
         ]
     )
@@ -75,8 +57,7 @@ def get_auto_case_kb() -> InlineKeyboardMarkup:
             [InlineKeyboardButton(text="📢 Ссылка на пост в канале", url="https://t.me/pxlbot_studios/30")],
             [InlineKeyboardButton(text="🎯 Заказать калькулятор для автобизнеса", callback_data="start_order")],
             [InlineKeyboardButton(text="🧮 Рассчитать под мою сферу", callback_data="start_calc")],
-            [InlineKeyboardButton(text="🎪 В шоурум решений", callback_data="showroom_menu")],
-            [InlineKeyboardButton(text="📂 Все проекты и кейсы", callback_data="cases_menu")],
+            [InlineKeyboardButton(text="🎪 Все стенды шоурума", callback_data="showroom_menu")],
             [InlineKeyboardButton(text="🔙 Главное меню", callback_data="to_main_menu")]
         ]
     )
@@ -87,8 +68,7 @@ def get_agro_case_kb() -> InlineKeyboardMarkup:
             [InlineKeyboardButton(text="📢 Ссылка на пост в канале", url="https://t.me/pxlbot_studios/19")],
             [InlineKeyboardButton(text="🎯 Обсудить B2B-решение с инженером", callback_data="start_order")],
             [InlineKeyboardButton(text="🧮 Рассчитать смету в калькуляторе", callback_data="start_calc")],
-            [InlineKeyboardButton(text="🎪 В шоурум решений", callback_data="showroom_menu")],
-            [InlineKeyboardButton(text="📂 Все проекты и кейсы", callback_data="cases_menu")],
+            [InlineKeyboardButton(text="🎪 Все стенды шоурума", callback_data="showroom_menu")],
             [InlineKeyboardButton(text="🔙 Главное меню", callback_data="to_main_menu")]
         ]
     )
@@ -98,8 +78,7 @@ def get_single_case_kb() -> InlineKeyboardMarkup:
         inline_keyboard=[
             [InlineKeyboardButton(text="🎯 Хочу похожее решение для бизнеса", callback_data="start_order")],
             [InlineKeyboardButton(text="🧮 Рассчитать под мою сферу", callback_data="start_calc")],
-            [InlineKeyboardButton(text="🎪 Шоурум решений", callback_data="showroom_menu")],
-            [InlineKeyboardButton(text="📂 Все проекты и кейсы", callback_data="cases_menu")],
+            [InlineKeyboardButton(text="🎪 Все стенды шоурума", callback_data="showroom_menu")],
             [InlineKeyboardButton(text="🔙 Главное меню", callback_data="to_main_menu")]
         ]
     )
