@@ -36,6 +36,8 @@ try:
 except Exception as _e:
     generate_smeta_docx = None
 
+router = Router()
+
 DYNAMIC_ADMIN_FILE = "admin_id.txt"
 USER_PLANS_FILE = "user_plans.json"
 MEDIA_CACHE_FILE = "media_cache.json"
