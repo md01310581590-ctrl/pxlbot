@@ -18,6 +18,9 @@ def get_main_menu_kb() -> InlineKeyboardMarkup:
                 InlineKeyboardButton(text="📂 Тарифы и пакеты под ключ", callback_data="services_menu")
             ],
             [
+                InlineKeyboardButton(text="🎪 Шоурум решений (Демо-стенды)", callback_data="showroom_menu")
+            ],
+            [
                 InlineKeyboardButton(text="💬 Написать основателю (@Nicky_pxl)", url=get_founder_url())
             ],
             [
@@ -32,10 +35,60 @@ def get_cases_kb() -> InlineKeyboardMarkup:
         inline_keyboard=[
             [InlineKeyboardButton(text="🌾 B2B-терминал: «Агротерминал» (TradingView & Netback)", callback_data="case_agro")],
             [InlineKeyboardButton(text="⚖️ LegalTech: «ЮрБиржа» (Escrow & Проверка юристов)", callback_data="case_legal")],
-            [InlineKeyboardButton(text="🛍 E-commerce: Онлайн-магазин в Telegram (Mini App)", callback_data="case_miniapp")],
             [InlineKeyboardButton(text="🚗 Автобизнес: Интерактивный калькулятор ТО и заезда", callback_data="case_auto")],
+            [InlineKeyboardButton(text="🛍 E-commerce: Онлайн-магазин в Telegram (Mini App)", callback_data="case_miniapp")],
             [InlineKeyboardButton(text="💈 Сфера услуг: Запись 24/7 и борьба с неявками", callback_data="case_beauty")],
             [InlineKeyboardButton(text="📋 Квиз-воронка: Лидген в недвижимости и ремонте", callback_data="case_quiz")],
+            [InlineKeyboardButton(text="🎪 Шоурум решений (Демо-стенды)", callback_data="showroom_menu")],
+            [InlineKeyboardButton(text="🔙 Главное меню", callback_data="to_main_menu")]
+        ]
+    )
+
+def get_showroom_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="🚗 1. Детейлинг & Автосервис (Калькулятор ТО)", callback_data="show_demo_auto")],
+            [InlineKeyboardButton(text="⚖️ 2. LegalTech «ЮрБиржа» (Escrow & TMA)", callback_data="case_legal")],
+            [InlineKeyboardButton(text="🌾 3. AgroTech «Агротерминал» (B2B трейдинг)", callback_data="case_agro")],
+            [InlineKeyboardButton(text="🛍 4. E-commerce D2C (Магазин в Telegram)", callback_data="case_miniapp")],
+            [InlineKeyboardButton(text="🧮 Рассчитать проект под ключ", callback_data="start_calc")],
+            [InlineKeyboardButton(text="🔙 Главное меню", callback_data="to_main_menu")]
+        ]
+    )
+
+def get_legal_case_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="📢 Читать пост о ЮрБирже в канале", url="https://t.me/pxlbot_studios/20")],
+            [InlineKeyboardButton(text="🎯 Хочу похожее решение для бизнеса", callback_data="start_order")],
+            [InlineKeyboardButton(text="🧮 Рассчитать смету проекта", callback_data="start_calc")],
+            [InlineKeyboardButton(text="🎪 В шоурум решений", callback_data="showroom_menu")],
+            [InlineKeyboardButton(text="📂 Все проекты и кейсы", callback_data="cases_menu")],
+            [InlineKeyboardButton(text="🔙 Главное меню", callback_data="to_main_menu")]
+        ]
+    )
+
+def get_auto_case_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="🚀 Открыть демо-бота (@apex_detail_demo_bot)", url="https://t.me/apex_detail_demo_bot")],
+            [InlineKeyboardButton(text="📢 Ссылка на пост в канале", url="https://t.me/pxlbot_studios/30")],
+            [InlineKeyboardButton(text="🎯 Заказать калькулятор для автобизнеса", callback_data="start_order")],
+            [InlineKeyboardButton(text="🧮 Рассчитать под мою сферу", callback_data="start_calc")],
+            [InlineKeyboardButton(text="🎪 В шоурум решений", callback_data="showroom_menu")],
+            [InlineKeyboardButton(text="📂 Все проекты и кейсы", callback_data="cases_menu")],
+            [InlineKeyboardButton(text="🔙 Главное меню", callback_data="to_main_menu")]
+        ]
+    )
+
+def get_agro_case_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="📢 Ссылка на пост в канале", url="https://t.me/pxlbot_studios/19")],
+            [InlineKeyboardButton(text="🎯 Обсудить B2B-решение с инженером", callback_data="start_order")],
+            [InlineKeyboardButton(text="🧮 Рассчитать смету в калькуляторе", callback_data="start_calc")],
+            [InlineKeyboardButton(text="🎪 В шоурум решений", callback_data="showroom_menu")],
+            [InlineKeyboardButton(text="📂 Все проекты и кейсы", callback_data="cases_menu")],
             [InlineKeyboardButton(text="🔙 Главное меню", callback_data="to_main_menu")]
         ]
     )
@@ -45,6 +98,7 @@ def get_single_case_kb() -> InlineKeyboardMarkup:
         inline_keyboard=[
             [InlineKeyboardButton(text="🎯 Хочу похожее решение для бизнеса", callback_data="start_order")],
             [InlineKeyboardButton(text="🧮 Рассчитать под мою сферу", callback_data="start_calc")],
+            [InlineKeyboardButton(text="🎪 Шоурум решений", callback_data="showroom_menu")],
             [InlineKeyboardButton(text="📂 Все проекты и кейсы", callback_data="cases_menu")],
             [InlineKeyboardButton(text="🔙 Главное меню", callback_data="to_main_menu")]
         ]

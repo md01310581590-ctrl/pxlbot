@@ -1,11 +1,15 @@
 from aiogram import Router, F, Bot
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 
 from keyboards import (
     get_main_menu_kb,
     get_cases_kb,
+    get_showroom_kb,
+    get_legal_case_kb,
+    get_auto_case_kb,
+    get_agro_case_kb,
     get_single_case_kb,
     get_services_kb,
     get_modules_kb,
@@ -28,11 +32,13 @@ from states import CalculatorStates, OrderStates, SupportAuditStates, BundleOrde
 from config import ADMIN_ID, FOUNDER_USERNAME
 import os
 import json
+from smeta_generator import generate_smeta_docx
 
 router = Router()
 
 DYNAMIC_ADMIN_FILE = "admin_id.txt"
 USER_PLANS_FILE = "user_plans.json"
+MEDIA_CACHE_FILE = "media_cache.json"
 DIVIDER = "――――――――――\n"
 
 # ────────────────────────── ХРАНЕНИЕ ДАННЫХ И СТАТУСОВ ──────────────────────────
@@ -58,6 +64,70 @@ def save_admin_id_if_founder(user) -> None:
                 f.write(str(user.id))
         except Exception:
             pass
+
+def get_cached_media(key: str) -> str:
+    if os.path.exists(MEDIA_CACHE_FILE):
+        try:
+            with open(MEDIA_CACHE_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return data.get(key, "")
+        except Exception:
+            pass
+    return ""
+
+def set_cached_media(key: str, val: str) -> None:
+    data = {}
+    if os.path.exists(MEDIA_CACHE_FILE):
+        try:
+            with open(MEDIA_CACHE_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            pass
+    data[key] = val
+    try:
+        with open(MEDIA_CACHE_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
+async def safe_send_or_edit(call: CallbackQuery, text: str, reply_markup=None, parse_mode="HTML", disable_web_page_preview=True):
+    try:
+        await call.message.edit_text(
+            text=text,
+            reply_markup=reply_markup,
+            parse_mode=parse_mode,
+            disable_web_page_preview=disable_web_page_preview
+        )
+    except Exception:
+        try:
+            await call.message.delete()
+        except Exception:
+            pass
+        await call.message.answer(
+            text=text,
+            reply_markup=reply_markup,
+            parse_mode=parse_mode,
+            disable_web_page_preview=disable_web_page_preview
+        )
+
+def get_legal_video():
+    file_id = get_cached_media("legal_video_file_id")
+    if file_id:
+        return file_id, "file_id"
+    candidates = [
+        os.path.join(os.path.dirname(__file__), "media", "legal_demo.mp4"),
+        os.path.join(os.path.dirname(__file__), "media", "итог 1.mp4"),
+        os.path.expanduser(r"~\Desktop\итог 1.mp4"),
+        r"C:\Users\Валера куплю гараж\Desktop\итог 1.mp4"
+    ]
+    for p in candidates:
+        if os.path.exists(p):
+            sz = os.path.getsize(p)
+            if sz <= 49 * 1024 * 1024:
+                return FSInputFile(p), "local_file"
+            else:
+                return p, "too_large"
+    return None, None
 
 PLANS_CATALOG = {
     "base": {
@@ -247,11 +317,54 @@ async def cmd_start(message: Message, state: FSMContext):
 @router.callback_query(F.data == "to_main_menu")
 async def cb_main_menu(call: CallbackQuery, state: FSMContext):
     await state.clear()
-    await call.message.edit_text(
+    await safe_send_or_edit(
+        call,
         text=MAIN_WELCOME_TEXT,
         reply_markup=get_main_menu_kb(),
         parse_mode="HTML"
     )
+    await call.answer()
+
+# ────────────────────────── ШОУРУМ РЕШЕНИЙ (ДЕМО-СТЕНДЫ) ──────────────────────────
+
+@router.callback_query(F.data == "showroom_menu")
+async def cb_showroom_menu(call: CallbackQuery):
+    text = (
+        "🎪 <b>ШОУРУМ РЕШЕНИЙ PXLBOT STUDIOS // ДЕМО-СТЕНДЫ</b>\n"
+        + DIVIDER +
+        "Здесь собраны интерактивные демонстрации наших продуктов. "
+        "Вы можете протестировать живые решения и оценить скорость и UX:\n\n"
+        "🚗 <b>1. Автобизнес & Детейлинг (@apex_detail_demo_bot):</b>\n"
+        "Интерактивный калькулятор ТО и услуг за 20 секунд с бронированием.\n"
+        "👉 <a href=\"https://t.me/pxlbot_studios/30\">Ссылка на пост о шоуруме в канале</a>\n\n"
+        "⚖️ <b>2. LegalTech «ЮрБиржа» (Escrow & TMA):</b>\n"
+        "Полноценный маркетплейс услуг с безопасной сделкой и видео-демонстрацией.\n"
+        "👉 <a href=\"https://t.me/pxlbot_studios/20\">Ссылка на пост о ЮрБирже в канале</a>\n\n"
+        "🌾 <b>3. AgroTech «Агротерминал» (B2B):</b>\n"
+        "Биржевой стакан и Netback калькулятор (в процессе пересборки и кастдевов).\n"
+        "👉 <a href=\"https://t.me/pxlbot_studios/19\">Ссылка на пост об Агротерминале в канале</a>\n\n"
+        "🛍 <b>4. E-commerce D2C Mini App:</b>\n"
+        "Онлайн-магазин внутри Telegram с корзиной и оплатой в 1 клик.\n\n"
+        "<i>Выберите интересующий демо-стенд ниже:</i>"
+    )
+    await safe_send_or_edit(call, text=text, reply_markup=get_showroom_kb(), parse_mode="HTML", disable_web_page_preview=False)
+    await call.answer()
+
+@router.callback_query(F.data == "show_demo_auto")
+async def cb_show_demo_auto(call: CallbackQuery):
+    text = (
+        "🚗 <b>ДЕМО-СТЕНД: ДЕТЕЙЛИНГ & АВТОСЕРВИС</b>\n"
+        + DIVIDER +
+        "Мы запустили полноценный тестовый бот-калькулятор для автобизнеса.\n\n"
+        "<b>В демо-боте реализовано:</b>\n"
+        "• Выбор класса автомобиля (седан, кроссовер, внедорожник);\n"
+        "• Мгновенный расчет стоимости полировки, керамики, химчистки и ТО;\n"
+        "• Выбор удобного времени и оформление записи на заезд;\n"
+        "• Моментальная передача заявки мастеру-приемщику в CRM.\n\n"
+        "🚀 <b>Попробуйте прямо сейчас:</b> @apex_detail_demo_bot\n"
+        "👉 <b><a href=\"https://t.me/pxlbot_studios/30\">Ссылка на пост о шоуруме и автобизнесе в канале</a></b>"
+    )
+    await safe_send_or_edit(call, text=text, reply_markup=get_auto_case_kb(), parse_mode="HTML", disable_web_page_preview=False)
     await call.answer()
 
 # ────────────────────────── РАЗДЕЛ ПРОЕКТОВ И КЕЙСОВ ──────────────────────────
@@ -265,41 +378,99 @@ async def cb_cases_menu(call: CallbackQuery):
         "увеличивают средний чек и защищают компанию от штрафов.\n\n"
         "Выберите кейс, чтобы изучить бизнес-результат и архитектуру:"
     )
-    await call.message.edit_text(text=text, reply_markup=get_cases_kb(), parse_mode="HTML")
+    await safe_send_or_edit(call, text=text, reply_markup=get_cases_kb(), parse_mode="HTML")
     await call.answer()
 
 @router.callback_query(F.data == "case_agro")
 async def cb_case_agro(call: CallbackQuery):
     text = (
-        "🌾 <b>ФЛАГМАН: «Агротерминал» & «Агротрейд» (AgroTech TMA)</b>\n"
+        "🌾 <b>ФЛАГМАН: «Агротерминал» & «Агротрейд» (AgroTech B2B)</b>\n"
         + DIVIDER +
         "<b>Формат:</b> B2B-платформа и котировочный терминал (Telegram Mini App + Web)\n\n"
         "<b>Бизнес-задача:</b>\n"
         "Убрать хаос бесконечных чатов и посредников между производителями и экспортерами зерна.\n\n"
-        "<b>Что реализовано:</b>\n"
+        "<b>Что реализовано в базовой версии:</b>\n"
         "• Графики цен TradingView по портам Новороссийска, Тамани и Ростова в реальном времени;\n"
         "• Калькулятор Netback («EXW Ангар»): моментальный расчет чистой цены тонны с вычетом ж/д, авто и рефакций за качество;\n"
         "• Биржевой стакан (Order Book) прямых закупок от экспортеров с фиксацией объема в 1 клик.\n\n"
+        "🔄 <b>СТАТУС ПРОЕКТА: Глубокая пересборка и исследования рынка</b>\n"
+        "<i>Сейчас мы проводим масштабные качественные кастдевы зерновых трейдеров и экспортеров, "
+        "полностью пересобираем продуктовую логику и обновляем интерфейс терминала. "
+        "Полноценная видео-демонстрация новой версии будет опубликована в ближайшее время!</i>\n\n"
+        "👉 <b><a href=\"https://t.me/pxlbot_studios/19\">Ссылка на пост об Агротерминале в канале</a></b>\n\n"
         "💡 <i>Хотите подобный B2B-калькулятор или торговую площадку для своей ниши?</i>"
     )
-    await call.message.edit_text(text=text, reply_markup=get_single_case_kb(), parse_mode="HTML")
+    await safe_send_or_edit(call, text=text, reply_markup=get_agro_case_kb(), parse_mode="HTML", disable_web_page_preview=False)
     await call.answer()
 
 @router.callback_query(F.data == "case_legal")
 async def cb_case_legal(call: CallbackQuery):
-    text = (
+    video_payload, kind = get_legal_video()
+
+    caption_text = (
         "⚖️ <b>ФЛАГМАН: «ЮрБиржа» (LegalTech Marketplace & Escrow)</b>\n"
         + DIVIDER +
         "<b>Формат:</b> Двухсторонний маркетплейс услуг внутри Telegram (Mini App)\n\n"
         "<b>Бизнес-задача:</b>\n"
         "Обеспечить безопасные сделки между заказчиками и юристами с гарантией выплаты.\n\n"
         "<b>Что реализовано:</b>\n"
-        "• Безопасная сделка (Escrow): заморозка средств и выплата только после подтверждения результата;\n"
-        "• Проверка юристов через госреестры (ФИС ФРДО и Минюст РФ);\n"
-        "• Интерактивный квиз-брифинг задачи и авто-распределение заявок проверенным экспертам.\n\n"
+        "• <b>Безопасная сделка (Escrow):</b> заморозка средств и выплата только после подтверждения результата;\n"
+        "• <b>Проверка юристов:</b> верификация через госреестры (ФИС ФРДО и Минюст РФ);\n"
+        "• <b>Интерактивный квиз-брифинг:</b> авто-распределение заявок проверенным экспертам.\n\n"
+        "👉 <b><a href=\"https://t.me/pxlbot_studios/20\">Ссылка на подробный разбор кейса в канале</a></b>\n\n"
         "💡 <i>Разрабатываем сервисы услуг, закрытые клубы и биржи с монетизацией под ключ.</i>"
     )
-    await call.message.edit_text(text=text, reply_markup=get_single_case_kb(), parse_mode="HTML")
+
+    if kind in ("file_id", "local_file"):
+        try:
+            try:
+                await call.message.delete()
+            except Exception:
+                pass
+            await call.message.answer_video(
+                video=video_payload,
+                caption=caption_text,
+                reply_markup=get_legal_case_kb(),
+                parse_mode="HTML"
+            )
+            await call.answer()
+            return
+        except Exception as e:
+            print(f"Ошибка отправки видео кейса ЮрБиржа: {e}")
+
+    # Fallback на текстовую карточку
+    text = caption_text
+    if kind == "too_large":
+        admin_id = get_admin_id()
+        if call.from_user.id == admin_id or (call.from_user.username or "").lower() == (FOUNDER_USERNAME or "nicky_pxl").lower():
+            text += (
+                "\n\n⚙️ <i>[Админ-подсказка]: Видео «итог 1.mp4» найдено на рабочем столе, но весит 64.4 МБ (лимит Telegram Bot API на прямую отправку файлов — 50 МБ). "
+                "Просто перешлите это видео боту прямо в чат, и бот мгновенно привяжет его через облачный file_id!</i>"
+            )
+
+    await safe_send_or_edit(call, text=text, reply_markup=get_legal_case_kb(), parse_mode="HTML", disable_web_page_preview=False)
+    await call.answer()
+
+@router.callback_query(F.data == "case_auto")
+async def cb_case_auto(call: CallbackQuery):
+    text = (
+        "🚗 <b>КЕЙС & ШОУРУМ: Автосервис и детейлинг-центр</b>\n"
+        + DIVIDER +
+        "<b>Формат:</b> Интерактивный бот-калькулятор ТО и заезда с онлайн-бронированием\n\n"
+        "<b>Проблема клиента:</b>\n"
+        "Мастера тратили по 3 часа в день на ответы «Сколько стоит ТО на мою машину?», "
+        "а клиенты уходили к конкурентам, пока ждали ответа.\n\n"
+        "<b>Решение:</b>\n"
+        "• Интерактивный бот с расчетом цены под марку авто и объем работ за 20 секунд;\n"
+        "• Моментальный расчет сметы и онлайн-бронирование свободного бокса 24/7;\n"
+        "• Готовая карточка клиента сразу уходит в CRM с телефоном и моделью авто.\n\n"
+        "📈 <b>Результат:</b>\n"
+        "• Ответ клиенту сократился с 15 минут до <b>20 секунд</b>;\n"
+        "• Записи на сервис выросли на <b>+42%</b> без увеличения бюджета на рекламу.\n\n"
+        "👉 <b><a href=\"https://t.me/pxlbot_studios/30\">Ссылка на пост о шоуруме и детейлинге в канале</a></b>\n"
+        "🚀 <b><a href=\"https://t.me/apex_detail_demo_bot\">Открыть живой демо-стенд калькулятора</a></b>"
+    )
+    await safe_send_or_edit(call, text=text, reply_markup=get_auto_case_kb(), parse_mode="HTML", disable_web_page_preview=False)
     await call.answer()
 
 @router.callback_query(F.data == "case_miniapp")
@@ -319,26 +490,7 @@ async def cb_case_miniapp(call: CallbackQuery):
         "• Конверсия в оплату выросла в <b>2.4 раза</b>;\n"
         "• Запуск состоялся в 5 раз дешевле классического мобильного приложения."
     )
-    await call.message.edit_text(text=text, reply_markup=get_single_case_kb(), parse_mode="HTML")
-    await call.answer()
-
-@router.callback_query(F.data == "case_auto")
-async def cb_case_auto(call: CallbackQuery):
-    text = (
-        "🚗 <b>КЕЙС: Автосервис и детейлинг-центр</b>\n"
-        + DIVIDER +
-        "<b>Проблема клиента:</b>\n"
-        "Мастера тратили по 3 часа в день на ответы «Сколько стоит ТО на мою машину?», "
-        "а клиенты уходили к конкурентам, пока ждали ответа.\n\n"
-        "<b>Решение:</b>\n"
-        "• Интерактивный бот с расчетом цены под марку авто и объем работ;\n"
-        "• Моментальный расчет сметы и онлайн-бронирование свободного бокса 24/7;\n"
-        "• Готовая карточка клиента сразу уходит в CRM с телефоном и моделью авто.\n\n"
-        "📈 <b>Результат:</b>\n"
-        "• Ответ клиенту сократился с 15 минут до <b>20 секунд</b>;\n"
-        "• Записи на сервис выросли на <b>+42%</b> без увеличения бюджета на рекламу."
-    )
-    await call.message.edit_text(text=text, reply_markup=get_single_case_kb(), parse_mode="HTML")
+    await safe_send_or_edit(call, text=text, reply_markup=get_single_case_kb(), parse_mode="HTML")
     await call.answer()
 
 @router.callback_query(F.data == "case_beauty")
@@ -357,7 +509,7 @@ async def cb_case_beauty(call: CallbackQuery):
         "• <b>+28% подтвержденных записей</b> на том же трафике;\n"
         "• Доля неявок (No-Show) снизилась на <b>65%</b>."
     )
-    await call.message.edit_text(text=text, reply_markup=get_single_case_kb(), parse_mode="HTML")
+    await safe_send_or_edit(call, text=text, reply_markup=get_single_case_kb(), parse_mode="HTML")
     await call.answer()
 
 @router.callback_query(F.data == "case_quiz")
@@ -376,7 +528,7 @@ async def cb_case_quiz(call: CallbackQuery):
         "• Стоимость целевого квалифицированного контакта снизилась до <b>540 ₽</b>;\n"
         "• Конверсия звонка в замер/встречу выросла почти в 2 раза."
     )
-    await call.message.edit_text(text=text, reply_markup=get_single_case_kb(), parse_mode="HTML")
+    await safe_send_or_edit(call, text=text, reply_markup=get_single_case_kb(), parse_mode="HTML")
     await call.answer()
 
 # ────────────────────────── РАЗДЕЛ ТАРИФОВ И УСЛУГ (ЕДИНЫЙ ЭКРАН) ──────────────────────────
@@ -401,7 +553,7 @@ async def cb_services_menu(call: CallbackQuery):
         "<i>*При подключении любого тарифа техподдержки: первые 15 дней бесплатны со дня сдачи проекта.</i>\n\n"
         "👇 Выберите нужный раздел ниже или рассчитайте точную смету:"
     )
-    await call.message.edit_text(text=text, reply_markup=get_services_kb(), parse_mode="HTML")
+    await safe_send_or_edit(call, text=text, reply_markup=get_services_kb(), parse_mode="HTML")
     await call.answer()
 
 @router.callback_query(F.data == "modules_menu")
@@ -743,7 +895,7 @@ async def cb_venture_menu(call: CallbackQuery):
         "3️⃣ <b>«ЮрБиржа»</b> — двухсторонняя платформа юридических услуг с Escrow-сделками и проверкой юристов через госреестры.\n\n"
         "👇 Изучите кейсы или свяжитесь с основателем для запроса демо и финмодели:"
     )
-    await call.message.edit_text(text=text, reply_markup=get_venture_kb(), parse_mode="HTML")
+    await safe_send_or_edit(call, text=text, reply_markup=get_venture_kb(), parse_mode="HTML")
     await call.answer()
 
 # ────────────────────────── ТОЧНЫЙ 4-ШАГОВЫЙ КАЛЬКУЛЯТОР ──────────────────────────
@@ -757,7 +909,7 @@ async def cb_start_calc(call: CallbackQuery, state: FSMContext):
         + DIVIDER +
         "Какой базовый формат решения вам требуется?"
     )
-    await call.message.edit_text(text=text, reply_markup=get_calc_product_kb(), parse_mode="HTML")
+    await safe_send_or_edit(call, text=text, reply_markup=get_calc_product_kb(), parse_mode="HTML")
     await call.answer()
 
 @router.callback_query(CalculatorStates.choosing_product, F.data.startswith("calc_prod_"))
@@ -931,8 +1083,24 @@ async def process_calc_contact(message: Message, state: FSMContext, bot: Bot):
         )
         try:
             await bot.send_message(chat_id=target_admin_id, text=admin_text, parse_mode="HTML")
+            
+            # Генерация и отправка официальной сметы Word (Приложение №1)
+            smeta_file_path = generate_smeta_docx(data, client_contact=contact)
+            client_tag = (message.from_user.username or f"id{message.from_user.id}").replace("@", "")
+            doc_file = FSInputFile(smeta_file_path, filename=f"Приложение_1_Смета_PxlBot_{client_tag}.docx")
+            await bot.send_document(
+                chat_id=target_admin_id,
+                document=doc_file,
+                caption=(
+                    "📄 <b>Официальная смета (Приложение №1 к Договору)</b>\n"
+                    f"Сформирована для: <b>{contact}</b>\n"
+                    f"Итоговая сумма: <b>{data.get('price_total')}</b>\n"
+                    "<i>(Файл отправлен только вам как администратору)</i>"
+                ),
+                parse_mode="HTML"
+            )
         except Exception as e:
-            print(f"Ошибка отправки уведомления админу: {e}")
+            print(f"Ошибка отправки уведомления или сметы админу: {e}")
 
 # ────────────────────────── ПРЯМАЯ ЗАЯВКА НА РАЗРАБОТКУ ──────────────────────────
 
@@ -945,7 +1113,7 @@ async def cb_start_order(call: CallbackQuery, state: FSMContext):
         + DIVIDER +
         "Опишите в 1–2 предложениях: какая у вас сфера бизнеса и какую задачу нужно решить ботом?"
     )
-    await call.message.edit_text(text=text, reply_markup=get_cancel_kb(), parse_mode="HTML")
+    await safe_send_or_edit(call, text=text, reply_markup=get_cancel_kb(), parse_mode="HTML")
     await call.answer()
 
 @router.message(OrderStates.entering_details)
@@ -985,3 +1153,31 @@ async def process_order_contact(message: Message, state: FSMContext, bot: Bot):
             await bot.send_message(chat_id=target_admin_id, text=admin_text, parse_mode="HTML")
         except Exception as e:
             print(f"Ошибка отправки уведомления админу: {e}")
+
+# ────────────────────────── АДМИН-ЗАГРУЗКА ВИДЕО КЕЙСОВ ──────────────────────────
+
+@router.message(F.video)
+async def handle_admin_video_upload(message: Message):
+    save_admin_id_if_founder(message.from_user)
+    admin_id = get_admin_id()
+    sender_uname = (message.from_user.username or "").lower()
+    is_admin = (
+        message.from_user.id == admin_id
+        or (admin_id == 0 and sender_uname == (FOUNDER_USERNAME or "nicky_pxl").lower())
+        or sender_uname == (FOUNDER_USERNAME or "nicky_pxl").lower()
+    )
+    if is_admin:
+        file_id = message.video.file_id
+        set_cached_media("legal_video_file_id", file_id)
+        size_mb = (message.video.file_size or 0) / (1024 * 1024)
+        duration_sec = message.video.duration or 0
+        await message.reply(
+            f"📹 <b>Видео успешно получено и сохранено в облаке Telegram!</b>\n"
+            + DIVIDER +
+            f"🆔 <b>file_id:</b> <code>{file_id}</code>\n"
+            f"📦 <b>Размер:</b> {size_mb:.1f} МБ\n"
+            f"⏱ <b>Длительность:</b> {duration_sec} сек\n\n"
+            f"✅ <b>Видео автоматически привязано к кейсу «ЮрБиржа»!</b>\n"
+            f"Теперь любой пользователь в боте будет моментально получать это видео прямо из облака Telegram без задержек и ограничений по размеру.",
+            parse_mode="HTML"
+        )
