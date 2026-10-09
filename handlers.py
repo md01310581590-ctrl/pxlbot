@@ -31,10 +31,10 @@ from keyboards import (
 from states import CalculatorStates, OrderStates, SupportAuditStates, BundleOrderStates
 from config import ADMIN_ID, FOUNDER_USERNAME
 import os
-import json
-from smeta_generator import generate_smeta_docx
-
-router = Router()
+try:
+    from smeta_generator import generate_smeta_docx
+except Exception as _e:
+    generate_smeta_docx = None
 
 DYNAMIC_ADMIN_FILE = "admin_id.txt"
 USER_PLANS_FILE = "user_plans.json"
@@ -1085,20 +1085,24 @@ async def process_calc_contact(message: Message, state: FSMContext, bot: Bot):
             await bot.send_message(chat_id=target_admin_id, text=admin_text, parse_mode="HTML")
             
             # Генерация и отправка официальной сметы Word (Приложение №1)
-            smeta_file_path = generate_smeta_docx(data, client_contact=contact)
-            client_tag = (message.from_user.username or f"id{message.from_user.id}").replace("@", "")
-            doc_file = FSInputFile(smeta_file_path, filename=f"Приложение_1_Смета_PxlBot_{client_tag}.docx")
-            await bot.send_document(
-                chat_id=target_admin_id,
-                document=doc_file,
-                caption=(
-                    "📄 <b>Официальная смета (Приложение №1 к Договору)</b>\n"
-                    f"Сформирована для: <b>{contact}</b>\n"
-                    f"Итоговая сумма: <b>{data.get('price_total')}</b>\n"
-                    "<i>(Файл отправлен только вам как администратору)</i>"
-                ),
-                parse_mode="HTML"
-            )
+            if generate_smeta_docx:
+                try:
+                    smeta_file_path = generate_smeta_docx(data, client_contact=contact)
+                    client_tag = (message.from_user.username or f"id{message.from_user.id}").replace("@", "")
+                    doc_file = FSInputFile(smeta_file_path, filename=f"Приложение_1_Смета_PxlBot_{client_tag}.docx")
+                    await bot.send_document(
+                        chat_id=target_admin_id,
+                        document=doc_file,
+                        caption=(
+                            "📄 <b>Официальная смета (Приложение №1 к Договору)</b>\n"
+                            f"Сформирована для: <b>{contact}</b>\n"
+                            f"Итоговая сумма: <b>{data.get('price_total')}</b>\n"
+                            "<i>(Файл отправлен только вам как администратору)</i>"
+                        ),
+                        parse_mode="HTML"
+                    )
+                except Exception as docx_err:
+                    print(f"Ошибка формирования файла сметы: {docx_err}")
         except Exception as e:
             print(f"Ошибка отправки уведомления или сметы админу: {e}")
 
