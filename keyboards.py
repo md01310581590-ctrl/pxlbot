@@ -18,11 +18,8 @@ def get_main_menu_kb() -> InlineKeyboardMarkup:
                 InlineKeyboardButton(text="📂 Тарифы и пакеты под ключ", callback_data="services_menu")
             ],
             [
-                InlineKeyboardButton(text="💬 Написать основателю (@Nicky_pxl)", url=get_founder_url())
-            ],
-            [
                 InlineKeyboardButton(text="📢 Наш канал", url=get_channel_url()),
-                InlineKeyboardButton(text="💼 О студии / Venture", callback_data="venture_menu")
+                InlineKeyboardButton(text="💼 О студии", callback_data="about_menu")
             ]
         ]
     )
@@ -165,15 +162,23 @@ def get_support_status_kb() -> InlineKeyboardMarkup:
         ]
     )
 
-def get_venture_kb() -> InlineKeyboardMarkup:
+def get_about_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="🌾 Подробнее: Агротерминал & Агротрейд", callback_data="case_agro")],
-            [InlineKeyboardButton(text="⚖️ Подробнее: ЮрБиржа (Escrow TMA)", callback_data="case_legal")],
-            [InlineKeyboardButton(text="💼 Запросить питч-дек и демо (@Nicky_pxl)", url=get_founder_url())],
+            [InlineKeyboardButton(text="💬 Написать основателю (@Nicky_pxl)", url=get_founder_url())],
+            [InlineKeyboardButton(text="🧭 Пост «Навигация по каналу»", url="https://t.me/pxlbot_studios/10")],
+            [
+                InlineKeyboardButton(text="👥 Пост «Команда»", url="https://t.me/pxlbot_studios/11"),
+                InlineKeyboardButton(text="⚡️ Пост «Экспертиза»", url="https://t.me/pxlbot_studios/13")
+            ],
+            [InlineKeyboardButton(text="🎪 Перейти в шоурум решений", callback_data="showroom_menu")],
+            [InlineKeyboardButton(text="🧮 Рассчитать проект за 1 мин", callback_data="start_calc")],
             [InlineKeyboardButton(text="🔙 Главное меню", callback_data="to_main_menu")]
         ]
     )
+
+def get_venture_kb() -> InlineKeyboardMarkup:
+    return get_about_kb()
 
 # ────────────────────────── ТОЧНЫЙ 4-ШАГОВЫЙ КАЛЬКУЛЯТОР ──────────────────────────
 

@@ -11,11 +11,11 @@ BOT_TOKEN = (
     or ""
 ).strip()
 
-ADMIN_ID_RAW = os.getenv("ADMIN_ID", "0").strip()
-FOUNDER_USERNAME = os.getenv("FOUNDER_USERNAME", "Nicky_pxl").strip().replace("@", "")
-CHANNEL_URL = os.getenv("CHANNEL_URL", "https://t.me/pxlbot_studios").strip()
+ADMIN_ID_RAW = (os.getenv("ADMIN_ID") or "1850174341").strip()
+FOUNDER_USERNAME = (os.getenv("FOUNDER_USERNAME") or "Nicky_pxl").strip().replace("@", "")
+CHANNEL_URL = (os.getenv("CHANNEL_URL") or "https://t.me/pxlbot_studios").strip()
 
 try:
     ADMIN_ID = int(ADMIN_ID_RAW)
 except ValueError:
-    ADMIN_ID = 0
+    ADMIN_ID = 1850174341
